@@ -13,14 +13,14 @@ def checked_option
 end
 
 def list_of_elements
-  elements = checked_option
-  total_element = elements.size
+  selected_elements = checked_option
+  total_element = selected_elements.size
 
   maximum_width = 3.0
   columns = (total_element / maximum_width).ceil
 
   lists = []
-  elements.each_slice(columns) do |list|
+  selected_elements.each_slice(columns) do |list|
     lists << list
 
     # 最大要素数を取得して、その要素数に合わせる
