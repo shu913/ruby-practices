@@ -44,5 +44,4 @@ def main
     print "\n"
   end
 end
-
 main
