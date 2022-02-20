@@ -4,7 +4,7 @@
 require 'optparse'
 require 'etc'
 
-MAXIMUM_WIDTH = 3.0
+MAXIMUM_WIDTH = 3
 
 FILE_TYPE_LABELS =
   {
@@ -26,27 +26,26 @@ PERMISSION_LABELS =
   }.freeze
 
 class Ls
+  def got_options
+    ARGV.getopts('arl')
+  end
+
   def main
-    get_options = ARGV.getopts('arl')
+    options = got_options
+    @elements = if options['a'] && options['r']
+                  Dir.glob('*', File::FNM_DOTMATCH).sort.reverse
+                elsif options['a']
+                  Dir.glob('*', File::FNM_DOTMATCH).sort
+                elsif options['r']
+                  Dir.glob('*').sort.reverse
+                else
+                  Dir.glob('*').sort
+                end
 
-    if get_options['a']
-      @elements = Dir.glob('*', File::FNM_DOTMATCH).sort
-
-      list_of_elements
-      show_ls
-    elsif get_options['r']
-      @elements = Dir.glob('*').sort.reverse
-
-      list_of_elements
-      show_ls
-    elsif get_options['l']
-      @elements = Dir.glob('*').sort
-
+    if options['l']
       show_total_blocks
       show_file_details
     else
-      @elements = Dir.glob('*').sort
-
       list_of_elements
       show_ls
     end
@@ -55,7 +54,7 @@ class Ls
   def list_of_elements
     total_element = @elements.size
 
-    columns = (total_element / MAXIMUM_WIDTH).ceil
+    columns = (total_element.to_f / MAXIMUM_WIDTH).ceil
 
     lists = []
 
@@ -84,10 +83,9 @@ class Ls
   end
 
   def show_total_blocks
-    blocks = []
-    @elements.each do |element|
-      @stat = File.stat(element)
-      blocks << @stat.blocks
+    blocks = @elements.map do |element|
+      stat = File.stat(element)
+      stat.blocks
     end
     print 'total '
     print blocks.sum
@@ -96,24 +94,24 @@ class Ls
 
   def show_file_details
     @elements.each do |element|
-      @stat = File.stat(element)
-      @element_mode = @stat.mode.to_s(8)
+      stat = File.stat(element)
+      element_mode = stat.mode.to_s(8)
 
-      print FILE_TYPE_LABELS[@stat.ftype]
+      print FILE_TYPE_LABELS[stat.ftype]
 
-      permission_number = @element_mode.to_i.digits.take(3).reverse
+      permission_number = element_mode.to_i.digits.take(3).reverse
       element_permission =
         PERMISSION_LABELS[permission_number[0]] +
         PERMISSION_LABELS[permission_number[1]] +
         PERMISSION_LABELS[permission_number[2]]
       print "#{element_permission} "
 
-      print "#{@stat.nlink} "
+      print "#{stat.nlink} "
 
-      print "#{Etc.getpwuid(@stat.uid).name}  "
-      print "#{Etc.getgrgid(@stat.gid).name}  "
+      print "#{Etc.getpwuid(stat.uid).name}  "
+      print "#{Etc.getgrgid(stat.gid).name}  "
 
-      print "#{@stat.size}  "
+      print "#{stat.size}  "
       print "#{File.mtime(element).strftime('%m %e %H:%M')}  "
       print element
 
