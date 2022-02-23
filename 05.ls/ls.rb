@@ -32,15 +32,12 @@ class Ls
 
   def main
     options = got_options
-    @elements = if options['a'] && options['r']
-                  Dir.glob('*', File::FNM_DOTMATCH).sort.reverse
-                elsif options['a']
+    @elements = if options['a']
                   Dir.glob('*', File::FNM_DOTMATCH).sort
-                elsif options['r']
-                  Dir.glob('*').sort.reverse
                 else
                   Dir.glob('*').sort
                 end
+    @elements.reverse! if options['r']
 
     if options['l']
       show_total_blocks
