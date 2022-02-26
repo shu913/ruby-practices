@@ -41,9 +41,8 @@ class Ls
 
     if options['l']
       show_total_blocks
-      show_file_details
+      show_element_details
     else
-      list_of_elements
       show_ls
     end
   end
@@ -89,7 +88,10 @@ class Ls
     print "\n"
   end
 
-  def show_file_details
+  def show_element_details
+    max_nlink_digits = File.stat(@elements.max_by { |element| File.stat(element).nlink }).nlink.to_s.length
+    max_size_digits = File.stat(@elements.max_by { |element| File.stat(element).size }).size.to_s.length
+
     @elements.each do |element|
       stat = File.stat(element)
       element_mode = stat.mode.to_s(8)
@@ -101,15 +103,16 @@ class Ls
         PERMISSION_LABELS[permission_number[0]] +
         PERMISSION_LABELS[permission_number[1]] +
         PERMISSION_LABELS[permission_number[2]]
-      print "#{element_permission} "
+      print "#{element_permission}  "
 
-      print "#{stat.nlink} "
+      print "#{stat.nlink.to_s.rjust(max_nlink_digits)} "
 
       print "#{Etc.getpwuid(stat.uid).name}  "
       print "#{Etc.getgrgid(stat.gid).name}  "
 
-      print "#{stat.size}  "
-      print "#{File.mtime(element).strftime('%m %e %H:%M')}  "
+      print "#{stat.size.to_s.rjust(max_size_digits)} "
+
+      print "#{File.mtime(element).strftime('%b %e %H:%M')} "
       print element
 
       print "\n"
