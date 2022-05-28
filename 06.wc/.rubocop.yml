@@ -1,0 +1,6 @@
+inherit_gem:
+  rubocop-fjord:
+    - "config/rubocop.yml"
+
+Style/Documentation:
+  Enabled: false
